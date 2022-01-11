@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NovaTarefaMail;
+use Mail;
 use App\Models\Tarefa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,14 +21,13 @@ class TarefaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index(){
         
-        $id = Auth::user()->id;
+        /*$id = Auth::user()->id;
         $name = Auth::user()->name;
         $email = Auth::user()->email;
 
-        return "ID: $id| Nome: $name| Email: $email";
+        return "ID: $id| Nome: $name| Email: $email";*/
 
         
         /*if (Auth::check()) {
@@ -49,6 +50,13 @@ class TarefaController extends Controller
             return 'Você não está logado no sistema';
         }*/
 
+        $user_id = auth()->user()->id;
+        $tarefas = Tarefa::where('user_id',$user_id)->paginate(10);
+
+        return view('tarefa.index', [
+            'tarefas'=>$tarefas
+        ]);
+
     }
 
     /**
@@ -56,9 +64,8 @@ class TarefaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
+    public function create(){
+        return view('tarefa.create');
     }
 
     /**
@@ -67,9 +74,21 @@ class TarefaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        //
+    public function store(Request $request){
+        //dd($request->all());
+
+        $dados = $request->all('tarefa','data_limite_conclusao');
+        $dados['user_id'] = auth()->user()->id; //vinculando id do usuário autenticado à tarefa
+
+        //dd($dados);
+
+        $tarefa = Tarefa::create($dados);
+        //dd($tarefa->id);
+
+        $destinatario = auth()->user()->email;
+        Mail::to($destinatario)->send(New NovaTarefaMail($tarefa));
+
+        return redirect()->route('tarefa.show',['tarefa'=>$tarefa->id]);
     }
 
     /**
@@ -78,9 +97,11 @@ class TarefaController extends Controller
      * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function show(Tarefa $tarefa)
-    {
-        //
+    public function show(Tarefa $tarefa){
+        //dd($tarefa);
+        dd($tarefa->getAttributes());
+        
+        return view('tarefa.show',['tarefa'=>$tarefa]);
     }
 
     /**
@@ -89,8 +110,7 @@ class TarefaController extends Controller
      * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function edit(Tarefa $tarefa)
-    {
+    public function edit(Tarefa $tarefa){
         //
     }
 
@@ -101,8 +121,7 @@ class TarefaController extends Controller
      * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Tarefa $tarefa)
-    {
+    public function update(Request $request, Tarefa $tarefa){
         //
     }
 
@@ -112,8 +131,7 @@ class TarefaController extends Controller
      * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Tarefa $tarefa)
-    {
+    public function destroy(Tarefa $tarefa){
         //
     }
 }

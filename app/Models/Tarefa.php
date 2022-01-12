@@ -9,4 +9,9 @@ class Tarefa extends Model
 {
     use HasFactory;
     protected $fillable = ['tarefa','data_limite_conclusao','user_id'];
+
+    public function user(){
+        //relacionamento tem um. Uma tarefa pertence a um usuário
+        return $this->belongsTo('App\Models\User');
+    }
 }

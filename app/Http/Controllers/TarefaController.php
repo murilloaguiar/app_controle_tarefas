@@ -7,12 +7,15 @@ use Mail;
 use App\Models\Tarefa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TarefasExport;
+use PDF; //apelido
 
 class TarefaController extends Controller
 {
 
     public function __construct(){
-        $this->middleware('auth');
+        //$this->middleware('auth');
     }
 
     /**
@@ -85,7 +88,7 @@ class TarefaController extends Controller
         //dd($tarefa->id);
 
         $destinatario = auth()->user()->email;
-        Mail::to($destinatario)->send(New NovaTarefaMail($tarefa));
+        //Mail::to($destinatario)->send(New NovaTarefaMail($tarefa));
 
         return redirect()->route('tarefa.show',['tarefa'=>$tarefa->id]);
     }
@@ -98,7 +101,7 @@ class TarefaController extends Controller
      */
     public function show(Tarefa $tarefa){
         //dd($tarefa);
-        dd($tarefa->getAttributes());
+        //dd($tarefa->getAttributes());
         
         return view('tarefa.show',['tarefa'=>$tarefa]);
     }
@@ -132,7 +135,7 @@ class TarefaController extends Controller
     public function update(Request $request, Tarefa $tarefa){
 
 
-        if (!$tarefa->user_id = auth()->user()->id) {
+        if (!$tarefa->user_id == auth()->user()->id) {
             return view('acesso-negado');
 
         }
@@ -152,12 +155,41 @@ class TarefaController extends Controller
      */
     public function destroy(Tarefa $tarefa){
 
-        if (!$tarefa->user_id = auth()->user()->id) {
+        //dd($tarefa);
+        if (!$tarefa->user_id == auth()->user()->id) {
             return view('acesso-negado');
 
         }
 
         $tarefa->delete();
         return redirect()->route('tarefa.index');
+    }
+
+    public function exportacao($extensao){
+        //dd($extensao);
+
+        if (in_array($extensao, ['xlsx','csv','pdf'])) {
+            return Excel::download(new TarefasExport, "lista_de_tarefas.$extensao");
+        }
+ 
+        return redirect()->route('tarefa.index');
+   
+       
+    }
+
+    public function exportar(){
+        //dd($extensao);
+
+        $tarefas = auth()->user()->tarefas()->get();
+
+        $pdf = PDF::loadView('tarefa.pdf', [
+            'tarefas'=>$tarefas
+        ]);
+
+        //tipo do papel: a4, letter | orientação do papel: portrait, landscape
+        $pdf->setPaper('a4','landscape');
+        
+        return $pdf->stream('lista_de_tarefas.pdf');
+    
     }
 }

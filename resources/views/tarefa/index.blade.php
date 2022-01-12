@@ -5,7 +5,19 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Tarefas <a href="{{route('tarefa.create')}}" class="float-right">Novo</a></div>
+                    <div class="card-header">
+                        <div class="row justify-content-around">
+                            <div class="col-3">Tarefas </div>
+                            
+                            <div class="col-5">
+                                <a href="{{route('tarefa.create')}}" class="mr-3">Novo</a>
+                                <a href="{{route('tarefa.exportacao',['extensao'=>'csv'])}}" class="mr-3">CSV</a>
+                                <a href="{{route('tarefa.exportacao',['extensao'=>'xlsx'])}}" class="mr-3">XLSX</a>
+                                <a href="{{route('tarefa.exportar')}}" class="mr-3" target="_blank">DOMPDF</a>
+                            </div>
+                          
+                        </div>
+                    </div>
 
                     <div class="card-body">
                         <table class="table">
@@ -26,14 +38,14 @@
                                         <th scope="row">{{ $tarefa['id'] }}</th>
                                         <td>{{ $tarefa['tarefa'] }}</td>
                                         <td>{{ date('d/m/Y', strtotime($tarefa['data_limite_conclusao'])) }}</td>
-                                        <td><a href="{{route('route.edit',$tarefa['id'])}}"> Editar </a></td>
+                                        <td><a href="{{route('tarefa.edit',$tarefa['id'])}}"> Editar </a></td>
                                         <td>
                                             <form id="form_{{$tarefa['id']}}" method="post" action="{{route('tarefa.destroy',['tarefa'=>$tarefa['id']])}}">
                                                 @csrf
                                                 @method('DELETE')
                                                 
                                             </form>
-                                            <a href="" onclick="document.getElementById('form_{{$tarefa['id']}}').submit()"> Excluir </a>
+                                            <a href="#" onclick="document.getElementById('form_{{$tarefa['id']}}').submit()"> Excluir </a>
                                         </td>
 
                                     </tr>
@@ -44,14 +56,14 @@
                         <nav>
                             <ul class="pagination">
                                 <li class="page-item"><a class="page-link" href="{{$tarefas->previousPageUrl()}}">Voltar</a></li>
-                                @for ($i = 1;  $i<$tarefas->lastPage() ; $i++)
+                                @for ($i = 1;  $i<=$tarefas->lastPage() ; $i++)
                                     <li class="page-item {{$tarefas->currentPage() == $i ? 'active' : ''}}">
                                         <a class="page-link" href="{{$tarefas->url($i)}}">{{$i}}</a>
                                     </li>
                                 @endfor
                                 
                                 
-                                <li class="page-item"><a class="page-link" href="{{$variavel->nextPageUrl()}}">Avançar</a></li>
+                                <li class="page-item"><a class="page-link" href="{{$tarefas->nextPageUrl()}}">Avançar</a></li>
                             </ul>
                         </nav>
 
